@@ -1,5 +1,4 @@
-
-a este codigo vamos agregar estos videos https://youtu.be/VADJztWUVPo        https://youtu.be/nH6D2gZhnmQ            https://youtu.be/b1etEk_zkYk          https://youtu.be/WWuwxl_H2S4           <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -156,6 +155,21 @@ a este codigo vamos agregar estos videos https://youtu.be/VADJztWUVPo        htt
       <div class="video-grid" id="videoGrid"></div>
     </section>
 
+
+
+    <section id="letras">
+      <h2 class="section-title">Canciones</h2>
+      <p class="section-subtitle">Letras e información de las canciones.</p>
+      <div class="lyrics-container">
+        <div class="song-selector" id="songSelector" aria-label="Lista de canciones"></div>
+        <div class="lyrics-display" aria-live="polite">
+          <h3 id="lyricsTitle">Próximamente</h3>
+          <p class="author" id="lyricsAuthor">Jesús Manuel Espinoza</p>
+          <div class="lyrics-body" id="lyricsBody">Las canciones y sus letras se agregarán próximamente.</div>
+        </div>
+      </div>
+    </section>
+
     <section id="biografia">
       <div class="bio-wrapper">
         <div class="bio-photo">
@@ -180,7 +194,6 @@ a este codigo vamos agregar estos videos https://youtu.be/VADJztWUVPo        htt
 
     <section id="contacto">
       <h2 class="section-title">Contacto y redes</h2>
-      <p class="section-subtitle">¿Te interesa una presentación, colaboración o contratación? Ponte en contacto.</p>
       <div class="contact-container">
         <form class="contact-form" id="contactForm">
           <div class="form-group"><label for="contactName">Nombre</label><input id="contactName" name="nombre" required placeholder="Tu nombre"></div>
@@ -222,13 +235,16 @@ a este codigo vamos agregar estos videos https://youtu.be/VADJztWUVPo        htt
     // CONFIGURACIÓN: reemplaza estos datos por los enlaces oficiales del intérprete.
     const CONTACT_EMAIL = ""; // Ejemplo: contrataciones@tudominio.com
     const SOCIAL_URLS = { youtube: "", facebook: "", instagram: "" };
-    const FEATURED_YOUTUBE_ID = "VADJztWUVPo";
+    const FEATURED_YOUTUBE_ID = "VADJztWUVPo"; // Primer video destacado.
 
     const defaultVideos = [
-      { id: "VADJztWUVPo", title: "Loco", category: "Presentaciones", date: "2026" },
-      { id: "nH6D2gZhnmQ", title: "Hilos de plata", category: "Presentaciones", date: "2026" },
-      { id: "b1etEk_zkYk", title: "Me gusta", category: "Presentaciones", date: "2026" },
-      { id: "nH6D2gZhnmQ", title: "Interrogación", category: "Presentaciones", date: "2026" }
+      { id: "hVyC_1bsCyw", title: "Que Ironia", category: "Presentaciones", date: "2026" },
+      { id: "zkqIAX66Lxw", title: "Hilos de plata", category: "Presentaciones", date: "2026" },
+      { id: "ayn3ETnPvwM", title: "La Venia Bendita", category: "Presentaciones", date: "2026" },
+      { id: "9Xom7pV81Hg", title: "Interrogación", category: "Presentaciones", date: "2026" },
+      { id: "k8MCRCg1xJ4", title: "La Copa Rota", category: "Presentaciones", date: "2026" },
+      { id: "EugxnOaKyOI", title: "Me Gustas", category: "Presentaciones", date: "2026"} ,
+      { id: "kv-YTGVjNcc", title: "Loco", category: "Presentaciones", date: "2026" }
     ];
     const defaultSongs = [
       // Agrega canciones y letras propias o autorizadas:
@@ -256,17 +272,28 @@ a este codigo vamos agregar estos videos https://youtu.be/VADJztWUVPo        htt
     function youtubeId(value) {
       const input = value.trim();
       if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
+
       try {
         const url = new URL(input);
-        if (url.hostname.includes("youtu.be")) return url.pathname.slice(1).split("/")[0];
-        if (url.hostname.includes("youtube.com")) {
-          if (url.pathname === "/watch") return url.searchParams.get("v");
-          const parts = url.pathname.split("/");
-          const marker = parts.findIndex(p => ["embed", "shorts", "live"].includes(p));
-          if (marker >= 0) return parts[marker + 1];
+        const host = url.hostname.toLowerCase();
+        let id = null;
+
+        if (host === "youtu.be" || host === "www.youtu.be") {
+          id = url.pathname.split("/").filter(Boolean)[0] || null;
+        } else if (["youtube.com", "www.youtube.com", "m.youtube.com", "youtube-nocookie.com", "www.youtube-nocookie.com"].includes(host)) {
+          if (url.pathname === "/watch") {
+            id = url.searchParams.get("v");
+          } else {
+            const parts = url.pathname.split("/").filter(Boolean);
+            const marker = parts.findIndex(part => ["embed", "shorts", "live"].includes(part));
+            if (marker >= 0) id = parts[marker + 1] || null;
+          }
         }
-      } catch {}
-      return null;
+
+        return id && /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+      } catch {
+        return null;
+      }
     }
     function renderVideos() {
       const grid = document.getElementById("videoGrid");
@@ -316,7 +343,7 @@ a este codigo vamos agregar estos videos https://youtu.be/VADJztWUVPo        htt
         card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openVideoModal(video.id); } });
         grid.append(card);
       });
-      lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     function filterCategory(category) {
       activeCategory = category;
@@ -395,7 +422,7 @@ a este codigo vamos agregar estos videos https://youtu.be/VADJztWUVPo        htt
     document.addEventListener("keydown", e => { if (e.key === "Escape") { closeVideoModal(); closeAddModal(); } });
     renderVideos();
     renderSongs();
-    lucide.createIcons();
+    if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
   </script>
 </body>
 </html>
